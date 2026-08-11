@@ -1,9 +1,9 @@
 server:
-  port: 8889
+  port: 8887
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5433/asset_management
+    url: jdbc:postgresql://localhost:5435/asset_management
     username: postgres
     password: admin123
 
