@@ -16,11 +16,13 @@ public class UserController {
 
     private final UserRepository userRepository;
 
+    // Get all users
     @GetMapping
     public ResponseEntity<List<User>> getAll() {
         return ResponseEntity.ok(userRepository.findAll());
     }
 
+    // Get user by ID
     @GetMapping("/{id}")
     public ResponseEntity<User> getById(@PathVariable Long id) {
         return userRepository.findById(id)
@@ -28,11 +30,13 @@ public class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // Create user
     @PostMapping
     public ResponseEntity<User> create(@RequestBody User user) {
         return ResponseEntity.ok(userRepository.save(user));
     }
 
+    // Update user
     @PutMapping("/{id}")
     public ResponseEntity<User> update(
             @PathVariable Long id,
@@ -41,14 +45,28 @@ public class UserController {
         return userRepository.findById(id)
                 .map(existing -> {
 
+                    // Login information
                     existing.setUsername(user.getUsername());
                     existing.setEmail(user.getEmail());
+
+                    // Personal information
+                    existing.setFirstName(user.getFirstName());
+                    existing.setLastName(user.getLastName());
+                    existing.setGender(user.getGender());
+                    existing.setPhone(user.getPhone());
+
+                    // Staff information
+                    existing.setPosition(user.getPosition());
+                    existing.setDepartment(user.getDepartment());
+
+                    // Role and status
                     existing.setRole(user.getRole());
-                    existing.setStaff(user.getStaff());
                     existing.setStatus(user.getStatus());
 
+                    // Only update password if provided
                     if (user.getPassword() != null &&
                             !user.getPassword().isBlank()) {
+
                         existing.setPassword(user.getPassword());
                     }
 
@@ -59,6 +77,7 @@ public class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // Delete user
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
 
@@ -69,5 +88,25 @@ public class UserController {
         userRepository.deleteById(id);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody User loginRequest) {
+
+        return userRepository.findByUsername(loginRequest.getUsername())
+                .map(user -> {
+                    if (!user.getPassword().equals(loginRequest.getPassword())) {
+                        return ResponseEntity
+                                .status(401)
+                                .body("Invalid username or password");
+                    }
+
+                    return ResponseEntity.ok(user);
+                })
+                .orElse(
+                        ResponseEntity
+                                .status(401)
+                                .body("Invalid username or password")
+                );
     }
 }
