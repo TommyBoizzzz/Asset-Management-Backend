@@ -1,54 +1,107 @@
-name: GitHub Alert
-on:
-  push:
-    branches:
-      - "**"
+  name: GitHub Alert
 
-jobs:
-  github-notify:
-    runs-on: ubuntu-latest
-    env:
-      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-      TELEGRAM_THREAD_ID: ${{ secrets.TELEGRAM_THREAD_ID }}
-    steps:
-      - name: Send Telegram Alert
-        env:
-          GH_ACTOR: ${{ github.actor }}
-          GH_REPOSITORY: ${{ github.repository }}
-          GH_REF_NAME: ${{ github.ref_name }}
-        run: |
-          send_telegram() {
-            curl -sS -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
-              -d chat_id="${TELEGRAM_CHAT_ID}" \
-              -d message_thread_id="${TELEGRAM_THREAD_ID}" \
-              -d parse_mode="HTML" \
-              --data-urlencode text="$1"
-          }
+  on:
+    push:
+      branches:
+        - "**"
 
-          commits=$(jq -r '
-            .commits
-            | .[:20]
-            | to_entries[]
-            | "\(.key + 1). <a href=\"\(.value.url)\">\(.value.id[0:7])</a> " +
-              (.value.message
-                | split("\n")[0]
-                | gsub("&"; "&amp;")
-                | gsub("<"; "&lt;")
-                | gsub(">"; "&gt;")
+  jobs:
+    github-notify:
+      runs-on: ubuntu-latest
+
+      env:
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        TELEGRAM_THREAD_ID: ${{ secrets.TELEGRAM_THREAD_ID }}
+
+      steps:
+        - name: Send Telegram Alert
+          env:
+            GH_ACTOR: ${{ github.actor }}
+            GH_REPOSITORY: ${{ github.repository }}
+            GH_REF_NAME: ${{ github.ref_name }}
+
+          run: |
+            set -e
+            
+            echo "================================="
+            echo "Telegram GitHub Notification"
+            echo "================================="
+            
+            # Check required secrets
+            if [ -z "$TELEGRAM_BOT_TOKEN" ]; then
+              echo "ERROR: TELEGRAM_BOT_TOKEN is empty"
+              exit 1
+            fi
+            
+            if [ -z "$TELEGRAM_CHAT_ID" ]; then
+              echo "ERROR: TELEGRAM_CHAT_ID is empty"
+              exit 1
+            fi
+            
+            echo "Repository: $GH_REPOSITORY"
+            echo "Branch: $GH_REF_NAME"
+            echo "Pushed by: $GH_ACTOR"
+            
+            # Get commits from GitHub push event
+            commits=$(jq -r '
+              .commits
+              | .[:20]
+              | to_entries[]
+              | "\(.key + 1). <a href=\"\(.value.url)\">\(.value.id[0:7])</a> " +
+                (.value.message
+                  | split("\n")[0]
+                  | gsub("&"; "&amp;")
+                  | gsub("<"; "&lt;")
+                  | gsub(">"; "&gt;")
+                )
+            ' "$GITHUB_EVENT_PATH")
+            
+            if [ -z "$commits" ]; then
+              commits="No commit information found."
+            fi
+            
+            msg=$(printf '⚙️ <b>ASSET MANAGEMENT BACKEND</b>\n━━━━━━━━━━━━━━━━\n\n📦 <b>Repository</b>\n<code>%s</code>\n\n🌿 <b>Branch</b>\n<code>%s</code>\n\n👤 <b>Pushed by</b>\n%s\n\n📝 <b>Latest Commits</b>\n%s\n\n━━━━━━━━━━━━━━━━\n🔗 <a href="https://github.com/%s">View Repository</a>\n\n🤖 <i>GitHub Actions Notification</i>' \
+              "$GH_REPOSITORY" \
+              "$GH_REF_NAME" \
+              "$GH_ACTOR" \
+              "$commits" \
+              "$GH_REPOSITORY")
+            
+            echo "Sending message to Telegram..."
+            
+            # Build curl arguments
+            CURL_ARGS=(
+              -sS
+              -X POST
+              "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage"
+              -d "chat_id=${TELEGRAM_CHAT_ID}"
+              -d "parse_mode=HTML"
+              --data-urlencode "text=${msg}"
+            )
+            
+            # Only send message_thread_id if provided
+            if [ -n "$TELEGRAM_THREAD_ID" ]; then
+              echo "Using Telegram Thread ID: $TELEGRAM_THREAD_ID"
+              CURL_ARGS+=(
+                -d "message_thread_id=${TELEGRAM_THREAD_ID}"
               )
-          ' "$GITHUB_EVENT_PATH")
-
-          if [ -z "$commits" ]; then
-            echo "No commits found. Skipping."
-            exit 0
-          fi
-
-          msg=$(printf '⚙️ <b>ASSET MANAGEMENT BACKEND</b>\n━━━━━━━━━━━━━━━━\n\n📦 <b>Repository</b>\n   %s\n\n🌿 <b>Branch</b>\n   <code>%s</code>\n\n👤 <b>Pushed by</b>\n   %s\n\n📝 <b>Latest Commits</b>\n%s\n\n━━━━━━━━━━━━━━━━\n🔗 <a href="https://github.com/%s">View Repository</a>\n\n🤖 <i>GitHub Actions Notification</i>' \
-            "$GH_REPOSITORY" \
-            "$GH_REF_NAME" \
-            "$GH_ACTOR" \
-            "$commits" \
-            "$GH_REPOSITORY")
-
-          send_telegram "$msg"
+            else
+              echo "No Telegram Thread ID configured."
+              echo "Sending to normal chat."
+            fi
+            
+            response=$(curl "${CURL_ARGS[@]}")
+            
+            echo "Telegram API response:"
+            echo "$response"
+            
+            # Check Telegram response
+            success=$(echo "$response" | jq -r '.ok')
+            
+            if [ "$success" != "true" ]; then
+              echo "ERROR: Telegram rejected the message."
+              exit 1
+            fi
+            
+            echo "Telegram notification sent successfully!"
