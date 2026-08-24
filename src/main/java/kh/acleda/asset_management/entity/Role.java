@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "roles")
@@ -23,6 +25,23 @@ public class Role {
 
     @Column(length = 255)
     private String description;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "role_permissions",
+
+            joinColumns = @JoinColumn(
+                    name = "role_id",
+                    foreignKey = @ForeignKey(name = "fk_role_permission_role")
+            ),
+
+            inverseJoinColumns = @JoinColumn(
+                    name = "permission_id",
+                    foreignKey = @ForeignKey(name = "fk_role_permission_permission")
+            )
+    )
+    @Builder.Default
+    private Set<Permission> permissions = new HashSet<>();
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
