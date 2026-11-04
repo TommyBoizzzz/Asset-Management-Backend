@@ -31,12 +31,6 @@ public class User {
     @Column(name = "Fullname", length = 200)
     private String fullName;
 
-    @Column(length = 100)
-    private String firstName;
-
-    @Column(length = 100)
-    private String lastName;
-
     @Column(length = 20)
     private String gender;
 

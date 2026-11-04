@@ -47,10 +47,13 @@ public class SuperAdminInitializer implements CommandLineRunner {
 
         User superAdmin = User.builder()
                 .username("superadmin")
-                .password("CHANGE_ME")
+                .password("@admin123")
                 .email("superadmin@assetmanagement.com")
-                .fullName("Super Admin")
-                .department("IT")
+                .fullName("SUPERADMIN")
+                .gender("Male")
+                .phone("011779155")
+                .department("ADMIN")
+                .position("System Administrator")
                 .role(superAdminRole)
                 .status("ACTIVE")
                 .build();

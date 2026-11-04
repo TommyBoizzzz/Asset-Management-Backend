@@ -3,7 +3,9 @@ package kh.acleda.asset_management.controller;
 
 import kh.acleda.asset_management.entity.User;
 import kh.acleda.asset_management.repository.UserRepository;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -57,6 +59,7 @@ public class UserController {
 
                     // Staff information
                     existing.setDepartment(user.getDepartment());
+                    existing.setPosition(user.getPosition());
 
                     // Role and status
                     existing.setRole(user.getRole());
