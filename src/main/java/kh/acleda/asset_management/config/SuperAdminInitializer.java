@@ -1,3 +1,4 @@
+
 package kh.acleda.asset_management.config;
 
 import kh.acleda.asset_management.entity.Role;
@@ -24,7 +25,7 @@ public class SuperAdminInitializer implements CommandLineRunner {
 
         // 1. Create default roles
         Role superAdminRole = createRole(
-                "SUPER_ADMIN",
+                "SUPERADMIN",
                 "Full system access"
         );
 
@@ -48,9 +49,7 @@ public class SuperAdminInitializer implements CommandLineRunner {
                 .username("superadmin")
                 .password("CHANGE_ME")
                 .email("superadmin@assetmanagement.com")
-                .firstName("Super")
-                .lastName("Admin")
-                .position("System Administrator")
+                .fullName("Super Admin")
                 .department("IT")
                 .role(superAdminRole)
                 .status("ACTIVE")
@@ -61,6 +60,7 @@ public class SuperAdminInitializer implements CommandLineRunner {
         System.out.println("Super Admin created successfully!");
     }
 
+    // Create role if it does not exist
     private Role createRole(String name, String description) {
 
         return roleRepository.findByName(name)

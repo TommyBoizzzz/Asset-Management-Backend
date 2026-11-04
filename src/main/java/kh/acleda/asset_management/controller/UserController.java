@@ -1,3 +1,4 @@
+
 package kh.acleda.asset_management.controller;
 
 import kh.acleda.asset_management.entity.User;
@@ -50,13 +51,11 @@ public class UserController {
                     existing.setEmail(user.getEmail());
 
                     // Personal information
-                    existing.setFirstName(user.getFirstName());
-                    existing.setLastName(user.getLastName());
+                    existing.setFullName(user.getFullName());
                     existing.setGender(user.getGender());
                     existing.setPhone(user.getPhone());
 
                     // Staff information
-                    existing.setPosition(user.getPosition());
                     existing.setDepartment(user.getDepartment());
 
                     // Role and status
@@ -66,7 +65,6 @@ public class UserController {
                     // Only update password if provided
                     if (user.getPassword() != null &&
                             !user.getPassword().isBlank()) {
-
                         existing.setPassword(user.getPassword());
                     }
 
@@ -90,6 +88,7 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
+    // Login
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User loginRequest) {
 

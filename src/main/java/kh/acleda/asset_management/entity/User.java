@@ -28,11 +28,13 @@ public class User {
     @Column(nullable = false, unique = true, length = 150)
     private String email;
 
-    // Personal information
-    @Column(name = "first_name", length = 100)
+    @Column(name = "Fullname", length = 200)
+    private String fullName;
+
+    @Column(length = 100)
     private String firstName;
 
-    @Column(name = "last_name", length = 100)
+    @Column(length = 100)
     private String lastName;
 
     @Column(length = 20)
@@ -43,10 +45,10 @@ public class User {
 
     // Staff information
     @Column(length = 100)
-    private String position;
+    private String department;
 
     @Column(length = 100)
-    private String department;
+    private String position;
 
     // Role
     @ManyToOne(fetch = FetchType.LAZY)
