@@ -12,6 +12,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.LinkedHashSet;
+
 @Component
 @RequiredArgsConstructor
 public class SuperAdminInitializer implements CommandLineRunner {
@@ -23,36 +25,31 @@ public class SuperAdminInitializer implements CommandLineRunner {
     @Transactional
     public void run(String... args) {
 
-        // 1. Create default roles
-        Role superAdminRole = createRole(
-                "SUPERADMIN",
-                "Full system access"
-        );
+        // Create ONLY SUPERADMIN role
+        Role superAdminRole = roleRepository.findByName("SUPERADMIN")
+                .orElseGet(() -> roleRepository.save(
+                        Role.builder()
+                                .name("SUPERADMIN")
+                                .description("Full system access")
+                                .permissions(new LinkedHashSet<>())
+                                .permissionsConfigured(false)
+                                .build()
+                ));
 
-        createRole(
-                "ADMIN",
-                "Manage assets, users and departments"
-        );
-
-        createRole(
-                "USER",
-                "Standard system user"
-        );
-
-        // 2. Create Super Admin account
-        if (userRepository.existsByUsername("superadmin")) {
+        // Create Super Admin account
+        if (userRepository.existsByUsername("Administrator")) {
             System.out.println("Super Admin already exists.");
             return;
         }
 
         User superAdmin = User.builder()
-                .username("superadmin")
-                .password("@admin123")
-                .email("superadmin@assetmanagement.com")
-                .fullName("SUPERADMIN")
+                .username("Administrator")
+                .password("@Administrator123")
+                .email("administrator@assetmanagement.com")
+                .fullName("Administrator")
                 .gender("Male")
                 .phone("011779155")
-                .department("ADMIN")
+                .department("Administrator")
                 .position("System Administrator")
                 .role(superAdminRole)
                 .status("ACTIVE")
@@ -61,17 +58,5 @@ public class SuperAdminInitializer implements CommandLineRunner {
         userRepository.save(superAdmin);
 
         System.out.println("Super Admin created successfully!");
-    }
-
-    // Create role if it does not exist
-    private Role createRole(String name, String description) {
-
-        return roleRepository.findByName(name)
-                .orElseGet(() -> roleRepository.save(
-                        Role.builder()
-                                .name(name)
-                                .description(description)
-                                .build()
-                ));
     }
 }
