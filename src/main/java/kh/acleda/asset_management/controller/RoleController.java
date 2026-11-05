@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 
 @RestController
@@ -30,6 +31,10 @@ public class RoleController {
 
     @PostMapping
     public ResponseEntity<Role> create(@RequestBody Role role) {
+        role.setPermissionsConfigured(role.getPermissions() != null);
+        if (role.getPermissions() == null) {
+            role.setPermissions(new LinkedHashSet<>());
+        }
         return ResponseEntity.ok(roleRepository.save(role));
     }
 
@@ -42,6 +47,10 @@ public class RoleController {
                 .map(existing -> {
                     existing.setName(role.getName());
                     existing.setDescription(role.getDescription());
+                    if (role.getPermissions() != null) {
+                        existing.setPermissions(new LinkedHashSet<>(role.getPermissions()));
+                        existing.setPermissionsConfigured(true);
+                    }
                     return ResponseEntity.ok(roleRepository.save(existing));
                 })
                 .orElse(ResponseEntity.notFound().build());

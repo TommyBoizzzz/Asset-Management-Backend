@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Entity
 @Table(name = "roles")
@@ -23,6 +24,18 @@ public class Role {
 
     @Column(length = 255)
     private String description;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "role_permissions",
+            joinColumns = @JoinColumn(name = "role_id")
+    )
+    @Column(name = "permission_key", nullable = false, length = 100)
+    private Set<String> permissions;
+
+    @Column(name = "permissions_configured")
+    @Builder.Default
+    private Boolean permissionsConfigured = false;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
