@@ -1,16 +1,18 @@
+
 server:
-  port: 8887
+  port: ${PORT:8887}
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5435/asset_management
-    username: postgres
-    password: admin123
+    url: jdbc:postgresql://${PGHOST:localhost}:${PGPORT:5435}/${PGDATABASE:asset_management}
+    username: ${PGUSER:postgres}
+    password: ${PGPASSWORD:admin123}
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
