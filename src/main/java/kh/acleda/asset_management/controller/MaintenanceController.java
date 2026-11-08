@@ -43,13 +43,23 @@ public class MaintenanceController {
         );
     }
 
-    // Get maintenance by staff
+    // Get maintenance by assigned system user.
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Maintenance>> getByUser(
+            @PathVariable Long userId
+    ) {
+        return ResponseEntity.ok(
+                repository.findByAssignedToId(userId)
+        );
+    }
+
+    // Legacy records may still be associated with a staff row.
     @GetMapping("/staff/{staffId}")
-    public ResponseEntity<List<Maintenance>> getByStaff(
+    public ResponseEntity<List<Maintenance>> getByLegacyStaff(
             @PathVariable Long staffId
     ) {
         return ResponseEntity.ok(
-                repository.findByAssignedToId(staffId)
+                repository.findByLegacyAssignedToId(staffId)
         );
     }
 

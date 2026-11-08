@@ -25,8 +25,12 @@ public class Maintenance {
     private Asset asset;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "assigned_to")
-    private Staff assignedTo;
+    @JoinColumn(name = "assigned_to_user_id")
+    private User assignedTo;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assigned_to", insertable = false, updatable = false)
+    private Staff legacyAssignedTo;
 
     @Column(name = "maintenance_type", nullable = false, length = 30)
     private String maintenanceType;

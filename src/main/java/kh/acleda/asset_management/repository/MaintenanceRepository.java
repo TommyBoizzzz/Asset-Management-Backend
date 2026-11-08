@@ -11,7 +11,9 @@ public interface MaintenanceRepository
 
     List<Maintenance> findByAssetId(Long assetId);
 
-    List<Maintenance> findByAssignedToId(Long staffId);
+    List<Maintenance> findByAssignedToId(Long userId);
+
+    List<Maintenance> findByLegacyAssignedToId(Long staffId);
 
     List<Maintenance> findByStatus(String status);
 
