@@ -165,6 +165,14 @@ public class MaintenanceController {
         return repository.findById(id)
                 .map(existing -> {
 
+                    if (maintenance.getAsset() != null) {
+                        existing.setAsset(maintenance.getAsset());
+                    }
+
+                    if (maintenance.getAssignedTo() != null) {
+                        existing.setAssignedTo(maintenance.getAssignedTo());
+                    }
+
                     existing.setStatus("COMPLETED");
                     existing.setCompletedDate(
                             LocalDate.now()
